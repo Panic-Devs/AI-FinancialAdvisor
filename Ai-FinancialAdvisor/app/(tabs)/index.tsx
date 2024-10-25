@@ -68,7 +68,7 @@ export default function HomeScreen() {
   }, [translateYHeader, translateYDescription, opacityDescription, translateYChatbot, opacityChatbot, translateYTransaction, opacityTransaction]);
 
   return (
-    <ImageBackground source={require('./assets/backg.jpg')} style={styles.background}>
+    <ImageBackground source={require('./backg.jpg')} style={styles.background}>
       <ThemedView style={styles.container}>
         <Animated.View style={{ transform: [{ translateY: translateYHeader }] }}>
           <View style={styles.header}>
@@ -83,7 +83,7 @@ export default function HomeScreen() {
           </ThemedText>
         </Animated.View>
 
-        {/* Chatbot Section */}
+       
         <Animated.View style={{ transform: [{ translateY: translateYChatbot }], opacity: opacityChatbot }}>
           <View style={styles.chatbotSection}>
             <Icon name="chatbox-ellipses-outline" size={60} color="#FFFFFF" />
@@ -96,7 +96,7 @@ export default function HomeScreen() {
           </ThemedText>
         </Animated.View>
 
-        {/* Transaction Section */}
+        
         <Animated.View style={{ transform: [{ translateY: translateYTransaction }], opacity: opacityTransaction }}>
           <View style={styles.transactionSection}>
             <Icon name="wallet-outline" size={60} color="#FFFFFF" />
