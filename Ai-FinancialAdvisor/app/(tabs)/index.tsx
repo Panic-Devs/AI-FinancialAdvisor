@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Easing, View, ImageBackground } from 'react-native';
+import { Animated, StyleSheet, Easing, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -14,12 +14,16 @@ export default function HomeScreen() {
   const opacityTransaction = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    console.log("Animations starting...");
+
     Animated.timing(translateYHeader, {
       toValue: -270,
       duration: 1000,
       easing: Easing.inOut(Easing.ease),
       useNativeDriver: true,
     }).start(() => {
+      console.log("Header animation complete");
+
       Animated.parallel([
         Animated.timing(translateYDescription, {
           toValue: -250,
@@ -34,6 +38,8 @@ export default function HomeScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
+        console.log("Description animation complete");
+
         Animated.parallel([
           Animated.timing(translateYChatbot, {
             toValue: -230,
@@ -48,6 +54,8 @@ export default function HomeScreen() {
             useNativeDriver: true,
           }),
         ]).start(() => {
+          console.log("Chatbot animation complete");
+
           Animated.parallel([
             Animated.timing(translateYTransaction, {
               toValue: -210,
@@ -61,64 +69,55 @@ export default function HomeScreen() {
               easing: Easing.inOut(Easing.ease),
               useNativeDriver: true,
             }),
-          ]).start();
+          ]).start(() => console.log("Transaction animation complete"));
         });
       });
     });
-  }, [translateYHeader, translateYDescription, opacityDescription, translateYChatbot, opacityChatbot, translateYTransaction, opacityTransaction]);
+  }, []);
 
   return (
-    <ImageBackground source={require('./backg.jpg')} style={styles.background}>
-      <ThemedView style={styles.container}>
-        <Animated.View style={{ transform: [{ translateY: translateYHeader }] }}>
-          <View style={styles.header}>
-            <Icon name="cash-outline" size={30} color="#FFFFFF" style={styles.icon} />
-            <ThemedText style={styles.headerText}>Welcome To AI - Financial App</ThemedText>
-          </View>
-        </Animated.View>
+    <ThemedView style={styles.container}>
+      <Animated.View style={{ transform: [{ translateY: translateYHeader }] }}>
+        <View style={styles.header}>
+          <Icon name="cash-outline" size={30} color="#FFFFFF" style={styles.icon} />
+          <ThemedText style={styles.headerText}>Welcome To AI - Financial App</ThemedText>
+        </View>
+      </Animated.View>
 
-        <Animated.View style={{ transform: [{ translateY: translateYDescription }], opacity: opacityDescription }}>
-          <ThemedText style={styles.description}>
-            I am an AI-based financial tool designed to make your financial life easy. Our chatbot helps you manage transactions effortlessly. You can ask any questions to the chatbot and save your transactions in the transaction history.
-          </ThemedText>
-        </Animated.View>
+      <Animated.View style={{ transform: [{ translateY: translateYDescription }], opacity: opacityDescription }}>
+        <ThemedText style={styles.description}>
+          I am an AI-based financial tool designed to make your financial life easy. Our chatbot helps you manage transactions effortlessly. You can ask any questions to the chatbot and save your transactions in the transaction history.
+        </ThemedText>
+      </Animated.View>
 
-       
-        <Animated.View style={{ transform: [{ translateY: translateYChatbot }], opacity: opacityChatbot }}>
-          <View style={styles.chatbotSection}>
-            <Icon name="chatbox-ellipses-outline" size={60} color="#FFFFFF" />
-            <ThemedText style={styles.chatbotHeading}>
-              Our AI Finance Chatbot
-            </ThemedText>
-          </View>
-          <ThemedText style={styles.chatbotDescription}>
-            I can manage your transactions and advise you on your financial needs. To ask me something, click on the icon.
+      <Animated.View style={{ transform: [{ translateY: translateYChatbot }], opacity: opacityChatbot }}>
+        <View style={styles.chatbotSection}>
+          <Icon name="chatbox-ellipses-outline" size={60} color="#FFFFFF" />
+          <ThemedText style={styles.chatbotHeading}>
+            Our AI Finance Chatbot
           </ThemedText>
-        </Animated.View>
+        </View>
+        <ThemedText style={styles.chatbotDescription}>
+          I can manage your transactions and advise you on your financial needs. To ask me something, click on the icon.
+        </ThemedText>
+      </Animated.View>
 
-        
-        <Animated.View style={{ transform: [{ translateY: translateYTransaction }], opacity: opacityTransaction }}>
-          <View style={styles.transactionSection}>
-            <Icon name="wallet-outline" size={60} color="#FFFFFF" />
-            <ThemedText style={styles.transactionHeading}>
-              Transaction Management
-            </ThemedText>
-          </View>
-          <ThemedText style={styles.transactionDescription}>
-            Track and review your transaction history easily. Click on the icon to view your transactions.
+      <Animated.View style={{ transform: [{ translateY: translateYTransaction }], opacity: opacityTransaction }}>
+        <View style={styles.transactionSection}>
+          <Icon name="wallet-outline" size={60} color="#FFFFFF" />
+          <ThemedText style={styles.transactionHeading}>
+            Transaction Management
           </ThemedText>
-        </Animated.View>
-      </ThemedView>
-    </ImageBackground>
+        </View>
+        <ThemedText style={styles.transactionDescription}>
+          Track and review your transaction history easily. Click on the icon to view your transactions.
+        </ThemedText>
+      </Animated.View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
