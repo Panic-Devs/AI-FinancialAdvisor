@@ -60,7 +60,7 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#EEEEEE',
     paddingHorizontal: 16,
   },
   icon: {
@@ -83,11 +83,11 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
   },
   botMessage: {
-    backgroundColor: '#e6e6e6',
+    backgroundColor: '#1E3E62',
     alignSelf: 'flex-start',
   },
   userMessage: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#FF6500',
     alignSelf: 'flex-end',
   },
   messageText: {
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0B192C',
   },
   input: {
     flex: 1,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#007bff',
+    backgroundColor: '#FF6500',
     padding: 10,
     borderRadius: 20,
     justifyContent: 'center',
