@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Easing, View, Text } from 'react-native';
+import { Animated, StyleSheet, Easing, View, Text, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function HomeScreen() {
@@ -9,6 +9,13 @@ export default function HomeScreen() {
   const opacitySummary = useRef(new Animated.Value(0)).current;
   const opacityBotInfo = useRef(new Animated.Value(0)).current;
   const opacityTransactionInfo = useRef(new Animated.Value(0)).current;
+  const opacitySettingsInfo = useRef(new Animated.Value(0)).current;
+
+  // Animated values for icons
+  const bulbScale = useRef(new Animated.Value(1)).current;
+  const chatScale = useRef(new Animated.Value(1)).current;
+  const walletScale = useRef(new Animated.Value(1)).current;
+  const settingsScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.sequence([
@@ -63,15 +70,41 @@ export default function HomeScreen() {
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
+        Animated.timing(opacitySettingsInfo, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     ]).start();
   }, []);
 
+  // Function to animate the icon when clicked
+  const animateIcon = (scaleValue) => {
+    Animated.sequence([
+      Animated.timing(scaleValue, {
+        toValue: 1.5, // Scale up
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleValue, {
+        toValue: 1, // Scale back down
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.header, { opacity: opacityHeader }]}>
-        <Icon name="bulb-outline" size={40} color="#FF6500" />
-        <Text style={styles.headerText}>AI-Finance App</Text>
+        <TouchableWithoutFeedback onPress={() => animateIcon(bulbScale)}>
+          <Animated.View style={{ transform: [{ scale: bulbScale }] }}>
+            <Icon name="bulb-outline" size={40} color="#FF6500" />
+          </Animated.View>
+        </TouchableWithoutFeedback>
+        <Text style={styles.headerText}>AI-Financial App</Text>
       </Animated.View>
 
       <Animated.View style={[styles.summaryContainer, { opacity: opacitySummary }]}>
@@ -82,7 +115,11 @@ export default function HomeScreen() {
 
       {/* AI Bot Section */}
       <Animated.View style={[styles.botInfoContainer, { opacity: opacityBotInfo }]}>
-        <Icon name="chatbubble-ellipses-outline" size={40} color="#FF6500" style={styles.botIcon} />
+        <TouchableWithoutFeedback onPress={() => animateIcon(chatScale)}>
+          <Animated.View style={{ transform: [{ scale: chatScale }] }}>
+            <Icon name="chatbubble-ellipses-outline" size={40} color="#FF6500" style={styles.botIcon} />
+          </Animated.View>
+        </TouchableWithoutFeedback>
         <Text style={styles.botInfoText}>
           My AI bot is here to provide real-time financial insights, answer questions about your spending habits, and offer budgeting tips tailored to your needs. Simply ask, and I’ll guide you through making better financial decisions.
         </Text>
@@ -90,9 +127,25 @@ export default function HomeScreen() {
 
       {/* Transaction Section */}
       <Animated.View style={[styles.transactionInfoContainer, { opacity: opacityTransactionInfo }]}>
-        <Icon name="wallet-outline" size={40} color="#FF6500" style={styles.transactionIcon} />
+        <TouchableWithoutFeedback onPress={() => animateIcon(walletScale)}>
+          <Animated.View style={{ transform: [{ scale: walletScale }] }}>
+            <Icon name="wallet-outline" size={40} color="#FF6500" style={styles.transactionIcon} />
+          </Animated.View>
+        </TouchableWithoutFeedback>
         <Text style={styles.transactionInfoText}>
           Inside the Transaction section, you can manage and organize your financial transactions based on your unique needs. With the help of my AI bot, adding and tracking your transactions becomes seamless and personalized to your financial goals.
+        </Text>
+      </Animated.View>
+
+      {/* Settings Section */}
+      <Animated.View style={[styles.settingsInfoContainer, { opacity: opacitySettingsInfo }]}>
+        <TouchableWithoutFeedback onPress={() => animateIcon(settingsScale)}>
+          <Animated.View style={{ transform: [{ scale: settingsScale }] }}>
+            <Icon name="settings-outline" size={40} color="#FF6500" style={styles.settingsIcon} />
+          </Animated.View>
+        </TouchableWithoutFeedback>
+        <Text style={styles.settingsInfoText}>
+          Manage your account preferences here. Update your profile information, adjust notification settings, and configure security options to personalize your experience.
         </Text>
       </Animated.View>
 
@@ -112,22 +165,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#0B192C',
+    backgroundColor: '#000000', // Black background
     paddingTop: 40,
   },
   header: {
-    width: '100%',
-    backgroundColor: '#1E3E62',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    justifyContent: 'center',
+    paddingVertical: 20,
+    width: '100%',
+    backgroundColor: '#141414', // Slightly lighter for contrast
   },
   headerText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#FFFFFF', // White for contrast
     marginLeft: 12,
   },
   summaryContainer: {
@@ -136,7 +188,7 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#FFFFFF', // White for better readability
     textAlign: 'center',
   },
   botInfoContainer: {
@@ -149,7 +201,7 @@ const styles = StyleSheet.create({
   },
   botInfoText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#FFFFFF', // White for better readability
     textAlign: 'center',
   },
   transactionInfoContainer: {
@@ -162,7 +214,20 @@ const styles = StyleSheet.create({
   },
   transactionInfoText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#FFFFFF', // White for better readability
+    textAlign: 'center',
+  },
+  settingsInfoContainer: {
+    marginTop: 20,
+    paddingHorizontal: 30,
+    alignItems: 'center',
+  },
+  settingsIcon: {
+    marginBottom: 10,
+  },
+  settingsInfoText: {
+    fontSize: 16,
+    color: '#FFFFFF', // White for better readability
     textAlign: 'center',
   },
   textContainer: {
@@ -173,6 +238,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#FFFFFF', // White for contrast
   },
 });
