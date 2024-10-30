@@ -1,182 +1,178 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Easing, View } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Animated, StyleSheet, Easing, View, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function HomeScreen() {
-  const translateYHeader = useRef(new Animated.Value(0)).current;
-  const translateYDescription = useRef(new Animated.Value(50)).current;
-  const opacityDescription = useRef(new Animated.Value(0)).current;
-  const translateYChatbot = useRef(new Animated.Value(50)).current;
-  const opacityChatbot = useRef(new Animated.Value(0)).current;
-  const translateYTransaction = useRef(new Animated.Value(50)).current;
-  const opacityTransaction = useRef(new Animated.Value(0)).current;
+  const opacityWelcome = useRef(new Animated.Value(0)).current;
+  const opacityContent = useRef(new Animated.Value(0)).current;
+  const opacityHeader = useRef(new Animated.Value(0)).current;
+  const opacitySummary = useRef(new Animated.Value(0)).current;
+  const opacityBotInfo = useRef(new Animated.Value(0)).current;
+  const opacityTransactionInfo = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    console.log("Animations starting...");
-
-    Animated.timing(translateYHeader, {
-      toValue: -80,
-      duration: 1000,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: true,
-    }).start(() => {
-      console.log("Header animation complete");
-
+    Animated.sequence([
+      Animated.timing(opacityWelcome, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityWelcome, {
+        toValue: 0,
+        duration: 400,
+        delay: 1000,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityContent, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityContent, {
+        toValue: 0,
+        duration: 500,
+        delay: 1200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
       Animated.parallel([
-        Animated.timing(translateYDescription, {
-          toValue: -80,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityDescription, {
+        Animated.timing(opacityHeader, {
           toValue: 1,
-          duration: 1000,
+          duration: 600,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ]).start(() => {
-        console.log("Description animation complete");
-
-        Animated.parallel([
-          Animated.timing(translateYChatbot, {
-            toValue: -80,
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacityChatbot, {
-            toValue: 1,
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          console.log("Chatbot animation complete");
-
-          Animated.parallel([
-            Animated.timing(translateYTransaction, {
-              toValue: -80,
-              duration: 1000,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacityTransaction, {
-              toValue: 1,
-              duration: 1000,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }),
-          ]).start(() => console.log("Transaction animation complete"));
-        });
-      });
-    });
+        Animated.timing(opacitySummary, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityBotInfo, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityTransactionInfo, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
-      <Animated.View style={{ transform: [{ translateY: translateYHeader }] }}>
-        <View style={styles.header}>
-          <Icon name="cash-outline" size={30} color="#FFFFFF" style={styles.icon} />
-          <ThemedText style={styles.headerText}>Welcome To AI - Financial App</ThemedText>
-        </View>
+    <View style={styles.container}>
+      <Animated.View style={[styles.header, { opacity: opacityHeader }]}>
+        <Icon name="bulb-outline" size={40} color="#FF6500" />
+        <Text style={styles.headerText}>AI-Finance App</Text>
       </Animated.View>
 
-      <Animated.View style={{ transform: [{ translateY: translateYDescription }], opacity: opacityDescription }}>
-        <ThemedText style={styles.description}>
-          I am an AI-based financial tool designed to make your financial life easy. Our chatbot helps you manage transactions effortlessly. You can ask any questions to the chatbot and save your transactions in the transaction history.
-        </ThemedText>
+      <Animated.View style={[styles.summaryContainer, { opacity: opacitySummary }]}>
+        <Text style={styles.summaryText}>
+          I’m an AI-powered finance app designed to help you manage your financial needs seamlessly. Track your transactions, organize your money, and get personalized insights by interacting with my AI bot. Just ask, and I'll assist with your financial questions!
+        </Text>
       </Animated.View>
 
-      <Animated.View style={{ transform: [{ translateY: translateYChatbot }], opacity: opacityChatbot }}>
-        <View style={styles.chatbotSection}>
-          <Icon name="chatbox-ellipses-outline" size={60} color="#FFFFFF" />
-          <ThemedText style={styles.chatbotHeading}>
-            Our AI Finance Chatbot
-          </ThemedText>
-        </View>
-        <ThemedText style={styles.chatbotDescription}>
-          I can manage your transactions and advise you on your financial needs. To ask me something, click on the icon.
-        </ThemedText>
+      {/* AI Bot Section */}
+      <Animated.View style={[styles.botInfoContainer, { opacity: opacityBotInfo }]}>
+        <Icon name="chatbubble-ellipses-outline" size={40} color="#FF6500" style={styles.botIcon} />
+        <Text style={styles.botInfoText}>
+          My AI bot is here to provide real-time financial insights, answer questions about your spending habits, and offer budgeting tips tailored to your needs. Simply ask, and I’ll guide you through making better financial decisions.
+        </Text>
       </Animated.View>
 
-      <Animated.View style={{ transform: [{ translateY: translateYTransaction }], opacity: opacityTransaction }}>
-        <View style={styles.transactionSection}>
-          <Icon name="wallet-outline" size={60} color="#FFFFFF" />
-          <ThemedText style={styles.transactionHeading}>
-            Transaction Management
-          </ThemedText>
-        </View>
-        <ThemedText style={styles.transactionDescription}>
-          Track and review your transaction history easily. Click on the icon to view your transactions.
-        </ThemedText>
+      {/* Transaction Section */}
+      <Animated.View style={[styles.transactionInfoContainer, { opacity: opacityTransactionInfo }]}>
+        <Icon name="wallet-outline" size={40} color="#FF6500" style={styles.transactionIcon} />
+        <Text style={styles.transactionInfoText}>
+          Inside the Transaction section, you can manage and organize your financial transactions based on your unique needs. With the help of my AI bot, adding and tracking your transactions becomes seamless and personalized to your financial goals.
+        </Text>
       </Animated.View>
-    </ThemedView>
+
+      <Animated.View style={[styles.textContainer, { opacity: opacityWelcome }]}>
+        <Text style={styles.text}>Welcome to AI-Financial App</Text>
+      </Animated.View>
+
+      <Animated.View style={[styles.textContainer, { opacity: opacityContent }]}>
+        <Text style={styles.text}>Your Smart Financial Assistant</Text>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'rgba(53, 58, 58, 0.8)', // Semi-transparent background for readability
+    backgroundColor: '#0B192C',
+    paddingTop: 40,
   },
   header: {
+    width: '100%',
+    backgroundColor: '#1E3E62',
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  icon: {
-    marginRight: 10,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#C3BCC2',
+    color: '#FFFFFF',
+    marginLeft: 12,
   },
-  description: {
+  summaryContainer: {
     marginTop: 20,
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#FFFFFF',
+    paddingHorizontal: 30,
   },
-  chatbotSection: {
-    marginTop: 40,
-    flexDirection: 'row',
+  summaryText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  botInfoContainer: {
+    marginTop: 20,
+    paddingHorizontal: 30,
     alignItems: 'center',
   },
-  chatbotHeading: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    marginLeft: 10,
+  botIcon: {
+    marginBottom: 10,
   },
-  chatbotDescription: {
-    marginTop: 10,
+  botInfoText: {
     fontSize: 16,
-    textAlign: 'center',
     color: '#FFFFFF',
-    paddingHorizontal: 20,
+    textAlign: 'center',
   },
-  transactionSection: {
-    marginTop: 40,
-    flexDirection: 'row',
+  transactionInfoContainer: {
+    marginTop: 20,
+    paddingHorizontal: 30,
     alignItems: 'center',
   },
-  transactionHeading: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    marginLeft: 10,
+  transactionIcon: {
+    marginBottom: 10,
   },
-  transactionDescription: {
-    marginTop: 10,
+  transactionInfoText: {
     fontSize: 16,
-    textAlign: 'center',
     color: '#FFFFFF',
-    paddingHorizontal: 20,
+    textAlign: 'center',
+  },
+  textContainer: {
+    position: 'absolute',
+    top: '50%',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
 });
-
