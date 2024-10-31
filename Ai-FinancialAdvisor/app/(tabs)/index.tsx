@@ -174,7 +174,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
     width: '100%',
-    backgroundColor: '#141414', // Slightly lighter for contrast
+    backgroundColor: '#141414', // Slightly lighter for contrast+
+    paddingTop: 40,
+    paddingBottom:40, 
   },
   headerText: {
     fontSize: 28,
