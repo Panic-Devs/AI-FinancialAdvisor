@@ -1,17 +1,70 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, View, FlatList, Text } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View, FlatList, Text, TextInput, Button, Alert } from 'react-native';
+import * as SQLite from 'expo-sqlite';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function TabThreeScreen() {
-  // Sample data for the transactions table
-  const transactions = [
-    { id: '1', date: '2024-10-23', amount: '$100', status: 'Completed' },
-    { id: '2', date: '2024-10-22', amount: '$50', status: 'Pending' },
-    { id: '3', date: '2024-10-21', amount: '$200', status: 'Completed' },
-  ];
+  const [db, setDb] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [date, setDate] = useState('');
+  const [amount, setAmount] = useState('');
+  const [status, setStatus] = useState('');
 
-  // Function to render each row in the table
+  useEffect(() => {
+    const setupDatabase = async () => {
+      // Open the database asynchronously
+      const database = await SQLite.openDatabaseAsync('transactions.db');
+      setDb(database);
+
+      // Create the table if it doesn't exist
+      await database.execAsync(`
+        CREATE TABLE IF NOT EXISTS transactions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT,
+          amount TEXT,
+          status TEXT
+        );
+      `);
+
+      // Fetch any existing transactions from the database
+      fetchTransactions();
+    };
+
+    setupDatabase();
+  }, []);
+
+  // Function to fetch transactions from the database
+  const fetchTransactions = async () => {
+    if (!db) return;
+
+    const allRows = await db.getAllAsync('SELECT * FROM transactions');
+    setTransactions(allRows);
+  };
+
+  // Function to add a new transaction
+  const addTransaction = async () => {
+    if (!date || !amount || !status) {
+      Alert.alert('Error', 'Please fill all fields');
+      return;
+    }
+
+    await db.runAsync(
+      'INSERT INTO transactions (date, amount, status) VALUES (?, ?, ?)',
+      date,
+      amount,
+      status
+    );
+
+    // Refresh the transaction list and clear input fields
+    fetchTransactions();
+    setDate('');
+    setAmount('');
+    setStatus('');
+  };
+
+  // Function to render each transaction
   const renderTransaction = ({ item }) => (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.date}</Text>
@@ -27,7 +80,31 @@ export default function TabThreeScreen() {
         <Ionicons size={40} name="receipt" style={styles.icon} />
         <ThemedText type="title">Transactions</ThemedText>
       </View>
-      
+
+      {/* Input Fields */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Date (YYYY-MM-DD)"
+          value={date}
+          onChangeText={setDate}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Amount"
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Status"
+          value={status}
+          onChangeText={setStatus}
+        />
+        <Button title="Add Transaction" onPress={addTransaction} />
+      </View>
+
       {/* Table Header */}
       <View style={styles.header}>
         <Text style={styles.headerCell}>Date</Text>
@@ -39,8 +116,8 @@ export default function TabThreeScreen() {
       <FlatList
         data={transactions}
         renderItem={renderTransaction}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.table} // Added style for spacing around FlatList
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.table}
       />
     </ThemedView>
   );
@@ -50,7 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff', // Adjust to your theme
+    backgroundColor: '#fff',
   },
   icon: {
     color: '#808080',
@@ -62,8 +139,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
   table: {
-    paddingBottom: 20, // Prevent last item from being cut off
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
