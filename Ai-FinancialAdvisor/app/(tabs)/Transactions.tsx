@@ -1,24 +1,25 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, FlatList, Text, TextInput, Button, Alert } from 'react-native';
+import { StyleSheet, View, FlatList, Text, TextInput, Button, Alert, TouchableOpacity } from 'react-native';
 import * as SQLite from 'expo-sqlite';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function TabThreeScreen() {
   const [db, setDb] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
   const [amount, setAmount] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('Not Processed');
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     const setupDatabase = async () => {
-      // Open the database asynchronously
       const database = await SQLite.openDatabaseAsync('transactions.db');
       setDb(database);
 
-      // Create the table if it doesn't exist
       await database.execAsync(`
         CREATE TABLE IF NOT EXISTS transactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,14 +29,12 @@ export default function TabThreeScreen() {
         );
       `);
 
-      // Fetch any existing transactions from the database
       fetchTransactions();
     };
 
     setupDatabase();
   }, []);
 
-  // Function to fetch transactions from the database
   const fetchTransactions = async () => {
     if (!db) return;
 
@@ -43,7 +42,6 @@ export default function TabThreeScreen() {
     setTransactions(allRows);
   };
 
-  // Function to add a new transaction
   const addTransaction = async () => {
     if (!date || !amount || !status) {
       Alert.alert('Error', 'Please fill all fields');
@@ -52,19 +50,22 @@ export default function TabThreeScreen() {
 
     await db.runAsync(
       'INSERT INTO transactions (date, amount, status) VALUES (?, ?, ?)',
-      date,
+      date.toISOString().split('T')[0],  // Store as YYYY-MM-DD
       amount,
       status
     );
 
-    // Refresh the transaction list and clear input fields
     fetchTransactions();
-    setDate('');
+    setDate(new Date());
     setAmount('');
-    setStatus('');
+    setStatus('Not Processed');
   };
 
-  // Function to render each transaction
+  const onDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) setDate(selectedDate);
+  };
+
   const renderTransaction = ({ item }) => (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.date}</Text>
@@ -75,20 +76,26 @@ export default function TabThreeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      {/* Title */}
       <View style={styles.titleContainer}>
         <Ionicons size={40} name="receipt" style={styles.icon} />
         <ThemedText type="title">Transactions</ThemedText>
       </View>
 
-      {/* Input Fields */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Date (YYYY-MM-DD)"
+      {/* Date Picker */}
+      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePicker}>
+        <Text style={styles.datePickerText}>Date: {date.toISOString().split('T')[0]}</Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
           value={date}
-          onChangeText={setDate}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
         />
+      )}
+
+      {/* Other Input Fields */}
+      <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           placeholder="Amount"
@@ -96,12 +103,19 @@ export default function TabThreeScreen() {
           onChangeText={setAmount}
           keyboardType="numeric"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Status"
-          value={status}
-          onChangeText={setStatus}
-        />
+
+        {/* Status Picker */}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={status}
+            onValueChange={(itemValue) => setStatus(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Not Processed" value="Not Processed" />
+            <Picker.Item label="Processed" value="Processed" />
+          </Picker>
+        </View>
+
         <Button title="Add Transaction" onPress={addTransaction} />
       </View>
 
@@ -142,12 +156,34 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 20,
   },
+  datePicker: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  datePickerText: {
+    color: '#555',
+    fontSize: 16,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   table: {
     paddingBottom: 20,
