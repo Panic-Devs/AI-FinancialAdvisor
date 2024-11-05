@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import * as SQLite from 'expo-sqlite';
 
 export default function HomeScreen() {
   const [isFormFilled, setIsFormFilled] = useState(false); // Track if form is filled
@@ -94,11 +93,15 @@ export default function HomeScreen() {
   }, [isFormFilled]);
 
   const handleFormSubmit = () => {
-    if (name && email && payRange) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!name || !email || !payRange) {
+      alert('Please fill out all fields');
+    } else if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address');
+    } else {
       setIsFormFilled(true);
       setShowFormModal(false);
-    } else {
-      alert('Please fill out all fields');
     }
   };
 
@@ -123,32 +126,55 @@ export default function HomeScreen() {
       <Modal visible={showFormModal} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Enter Your Details</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Pay Range"
-            value={payRange}
-            onChangeText={setPayRange}
-          />
+          <Text style={styles.additionalText}>
+            Please provide your name, email, and pay range to get started with the app. This information helps us personalize your experience.
+          </Text>
+          
+          {/* Name Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Name:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your name"
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+          
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+          </View>
+          
+          {/* Pay Range Input with Dollar Sign */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Pay Range:</Text>
+            <View style={styles.payRangeContainer}>
+              <Text style={styles.dollarSign}>$</Text>
+              <TextInput
+                style={styles.payInput}
+                placeholder="0"
+                value={payRange}
+                onChangeText={(text) => setPayRange(text.replace(/[^0-9]/g, ''))} // Restrict to numbers only
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
           <Button title="Submit" onPress={handleFormSubmit} color="#FF6500" />
         </View>
       </Modal>
 
       {/* Main Content */}
       {isFormFilled && (
-        <>
+        <View style={styles.mainContent}>
           <Animated.View style={[styles.header, { opacity: opacityHeader }]}>
             <TouchableWithoutFeedback onPress={() => animateIcon(bulbScale)}>
               <Animated.View style={{ transform: [{ scale: bulbScale }] }}>
@@ -160,7 +186,7 @@ export default function HomeScreen() {
 
           <Animated.View style={[styles.summaryContainer, { opacity: opacitySummary }]}>
             <Text style={styles.summaryText}>
-              I’m an AI-powered finance app designed to help you manage your financial needs seamlessly. Track your transactions, organize your money, and get personalized insights by interacting with my AI bot.
+              I’m an AI-powered finance app designed to simplify your financial management. With this app, you can easily track your income and expenses, set financial goals, and get tailored advice. Start making informed financial decisions effortlessly with a tool that's both smart and user-friendly.
             </Text>
           </Animated.View>
 
@@ -171,7 +197,7 @@ export default function HomeScreen() {
               </Animated.View>
             </TouchableWithoutFeedback>
             <Text style={styles.botInfoText}>
-              My AI bot is here to provide real-time financial insights and answer questions tailored to your needs.
+              My AI bot is your personal financial assistant, here to provide real-time insights and answer any questions. Whether you need budgeting tips, spending analysis, or general financial advice, just ask, and I’ll respond with personalized recommendations to help you meet your goals.
             </Text>
           </Animated.View>
 
@@ -182,7 +208,7 @@ export default function HomeScreen() {
               </Animated.View>
             </TouchableWithoutFeedback>
             <Text style={styles.transactionInfoText}>
-              Manage your transactions and track your spending goals in the Transaction section.
+              The Transaction section lets you manage all your financial transactions with ease. You can log your income, expenses, and categorize them for better clarity. Use this section to track your financial activity over time, ensuring you stay on top of your budget and meet your financial targets.
             </Text>
           </Animated.View>
 
@@ -196,7 +222,7 @@ export default function HomeScreen() {
               Update your preferences, security, and notification settings in the Settings section.
             </Text>
           </Animated.View>
-        </>
+        </View>
       )}
 
       <Animated.View style={[styles.textContainer, { opacity: opacityWelcome }]}>
@@ -213,10 +239,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center', // Center vertically to occupy full screen
     alignItems: 'center',
     backgroundColor: '#000000',
     paddingTop: 40,
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'space-evenly', // Space out elements evenly
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
   },
   modalContainer: {
     flex: 1,
@@ -231,21 +264,42 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 20,
   },
-  input: {
+  inputContainer: {
     width: '80%',
-    padding: 10,
     marginVertical: 10,
+  },
+  label: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 5,
+  },
+  input: {
+    width: '100%',
+    padding: 10,
     backgroundColor: '#FFFFFF',
     borderRadius: 5,
+  },
+  payRangeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 5,
+    paddingLeft: 8,
+  },
+  dollarSign: {
+    fontSize: 16,
+    color: '#333',
+  },
+  payInput: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 20,
-    width: '100%',
-    backgroundColor: '#141414',
-    paddingBottom: 40,
   },
   headerText: {
     fontSize: 28,
@@ -254,8 +308,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   summaryContainer: {
-    marginTop: 20,
-    paddingHorizontal: 30,
+    alignItems: 'center',
+    marginVertical: 10,
   },
   summaryText: {
     fontSize: 16,
@@ -263,9 +317,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   botInfoContainer: {
-    marginTop: 20,
-    paddingHorizontal: 30,
     alignItems: 'center',
+    marginVertical: 10,
   },
   botInfoText: {
     fontSize: 16,
@@ -273,9 +326,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   transactionInfoContainer: {
-    marginTop: 20,
-    paddingHorizontal: 30,
     alignItems: 'center',
+    marginVertical: 10,
   },
   transactionInfoText: {
     fontSize: 16,
@@ -283,9 +335,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   settingsInfoContainer: {
-    marginTop: 20,
-    paddingHorizontal: 30,
     alignItems: 'center',
+    marginVertical: 10,
   },
   settingsInfoText: {
     fontSize: 16,
@@ -301,5 +352,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  additionalText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 15,
+    paddingHorizontal: 20,
   },
 });
