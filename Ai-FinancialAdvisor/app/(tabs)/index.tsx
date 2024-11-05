@@ -1,8 +1,14 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Easing, View, Text, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function HomeScreen() {
+  const [isFormFilled, setIsFormFilled] = useState(false); // Track if form is filled
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [payRange, setPayRange] = useState('');
+  const [showFormModal, setShowFormModal] = useState(false); // Initially hide the form modal
+
   const opacityWelcome = useRef(new Animated.Value(0)).current;
   const opacityContent = useRef(new Animated.Value(0)).current;
   const opacityHeader = useRef(new Animated.Value(0)).current;
@@ -11,7 +17,6 @@ export default function HomeScreen() {
   const opacityTransactionInfo = useRef(new Animated.Value(0)).current;
   const opacitySettingsInfo = useRef(new Animated.Value(0)).current;
 
-  // Animated values for icons
   const bulbScale = useRef(new Animated.Value(1)).current;
   const chatScale = useRef(new Animated.Value(1)).current;
   const walletScale = useRef(new Animated.Value(1)).current;
@@ -45,6 +50,13 @@ export default function HomeScreen() {
         easing: Easing.inOut(Easing.ease),
         useNativeDriver: true,
       }),
+    ]).start(() => {
+      setShowFormModal(true); // Show the form modal after the first two animations
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isFormFilled) {
       Animated.parallel([
         Animated.timing(opacityHeader, {
           toValue: 1,
@@ -76,20 +88,28 @@ export default function HomeScreen() {
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ]),
-    ]).start();
-  }, []);
+      ]).start();
+    }
+  }, [isFormFilled]);
 
-  // Function to animate the icon when clicked
+  const handleFormSubmit = () => {
+    if (name && email && payRange) {
+      setIsFormFilled(true);
+      setShowFormModal(false);
+    } else {
+      alert('Please fill out all fields');
+    }
+  };
+
   const animateIcon = (scaleValue) => {
     Animated.sequence([
       Animated.timing(scaleValue, {
-        toValue: 1.5, // Scale up
+        toValue: 1.5,
         duration: 200,
         useNativeDriver: true,
       }),
       Animated.timing(scaleValue, {
-        toValue: 1, // Scale back down
+        toValue: 1,
         duration: 200,
         useNativeDriver: true,
       }),
@@ -98,56 +118,85 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.header, { opacity: opacityHeader }]}>
-        <TouchableWithoutFeedback onPress={() => animateIcon(bulbScale)}>
-          <Animated.View style={{ transform: [{ scale: bulbScale }] }}>
-            <Icon name="bulb-outline" size={40} color="#FF6500" />
-          </Animated.View>
-        </TouchableWithoutFeedback>
-        <Text style={styles.headerText}>AI-Financial App</Text>
-      </Animated.View>
+      {/* Form Modal */}
+      <Modal visible={showFormModal} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Enter Your Details</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Pay Range"
+            value={payRange}
+            onChangeText={setPayRange}
+          />
+          <Button title="Submit" onPress={handleFormSubmit} color="#FF6500" />
+        </View>
+      </Modal>
 
-      <Animated.View style={[styles.summaryContainer, { opacity: opacitySummary }]}>
-        <Text style={styles.summaryText}>
-          I’m an AI-powered finance app designed to help you manage your financial needs seamlessly. Track your transactions, organize your money, and get personalized insights by interacting with my AI bot. Just ask, and I'll assist with your financial questions!
-        </Text>
-      </Animated.View>
-
-      {/* AI Bot Section */}
-      <Animated.View style={[styles.botInfoContainer, { opacity: opacityBotInfo }]}>
-        <TouchableWithoutFeedback onPress={() => animateIcon(chatScale)}>
-          <Animated.View style={{ transform: [{ scale: chatScale }] }}>
-            <Icon name="chatbubble-ellipses-outline" size={40} color="#FF6500" style={styles.botIcon} />
+      {/* Main Content */}
+      {isFormFilled && (
+        <>
+          <Animated.View style={[styles.header, { opacity: opacityHeader }]}>
+            <TouchableWithoutFeedback onPress={() => animateIcon(bulbScale)}>
+              <Animated.View style={{ transform: [{ scale: bulbScale }] }}>
+                <Icon name="bulb-outline" size={40} color="#FF6500" />
+              </Animated.View>
+            </TouchableWithoutFeedback>
+            <Text style={styles.headerText}>AI-Financial App</Text>
           </Animated.View>
-        </TouchableWithoutFeedback>
-        <Text style={styles.botInfoText}>
-          My AI bot is here to provide real-time financial insights, answer questions about your spending habits, and offer budgeting tips tailored to your needs. Simply ask, and I’ll guide you through making better financial decisions.
-        </Text>
-      </Animated.View>
 
-      {/* Transaction Section */}
-      <Animated.View style={[styles.transactionInfoContainer, { opacity: opacityTransactionInfo }]}>
-        <TouchableWithoutFeedback onPress={() => animateIcon(walletScale)}>
-          <Animated.View style={{ transform: [{ scale: walletScale }] }}>
-            <Icon name="wallet-outline" size={40} color="#FF6500" style={styles.transactionIcon} />
+          <Animated.View style={[styles.summaryContainer, { opacity: opacitySummary }]}>
+            <Text style={styles.summaryText}>
+              I’m an AI-powered finance app designed to help you manage your financial needs seamlessly. Track your transactions, organize your money, and get personalized insights by interacting with my AI bot.
+            </Text>
           </Animated.View>
-        </TouchableWithoutFeedback>
-        <Text style={styles.transactionInfoText}>
-          Inside the Transaction section, you can manage and organize your financial transactions based on your unique needs. With the help of my AI bot, adding and tracking your transactions becomes seamless and personalized to your financial goals.
-        </Text>
-      </Animated.View>
 
-      {/* Settings Section */}
-      <Animated.View style={[styles.settingsInfoContainer, { opacity: opacitySettingsInfo }]}>
-        <TouchableWithoutFeedback onPress={() => animateIcon(settingsScale)}>
-          <Animated.View style={{ transform: [{ scale: settingsScale }] }}>
-            <Icon name="settings-outline" size={40} color="#FF6500" style={styles.settingsIcon} />
+          <Animated.View style={[styles.botInfoContainer, { opacity: opacityBotInfo }]}>
+            <TouchableWithoutFeedback onPress={() => animateIcon(chatScale)}>
+              <Animated.View style={{ transform: [{ scale: chatScale }] }}>
+                <Icon name="chatbubble-ellipses-outline" size={40} color="#FF6500" />
+              </Animated.View>
+            </TouchableWithoutFeedback>
+            <Text style={styles.botInfoText}>
+              My AI bot is here to provide real-time financial insights and answer questions tailored to your needs.
+            </Text>
           </Animated.View>
-        </TouchableWithoutFeedback>
-        <Text style={styles.settingsInfoText}>
-          Manage your account preferences here. Update your profile information, adjust notification settings, and configure security options to personalize your experience.
-        </Text>
-      </Animated.View>
+
+          <Animated.View style={[styles.transactionInfoContainer, { opacity: opacityTransactionInfo }]}>
+            <TouchableWithoutFeedback onPress={() => animateIcon(walletScale)}>
+              <Animated.View style={{ transform: [{ scale: walletScale }] }}>
+                <Icon name="wallet-outline" size={40} color="#FF6500" />
+              </Animated.View>
+            </TouchableWithoutFeedback>
+            <Text style={styles.transactionInfoText}>
+              Manage your transactions and track your spending goals in the Transaction section.
+            </Text>
+          </Animated.View>
+
+          <Animated.View style={[styles.settingsInfoContainer, { opacity: opacitySettingsInfo }]}>
+            <TouchableWithoutFeedback onPress={() => animateIcon(settingsScale)}>
+              <Animated.View style={{ transform: [{ scale: settingsScale }] }}>
+                <Icon name="settings-outline" size={40} color="#FF6500" />
+              </Animated.View>
+            </TouchableWithoutFeedback>
+            <Text style={styles.settingsInfoText}>
+              Update your preferences, security, and notification settings in the Settings section.
+            </Text>
+          </Animated.View>
+        </>
+      )}
 
       <Animated.View style={[styles.textContainer, { opacity: opacityWelcome }]}>
         <Text style={styles.text}>Welcome to AI-Financial App</Text>
@@ -165,8 +214,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#000000', // Black background
+    backgroundColor: '#000000',
     paddingTop: 40,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 20,
+  },
+  input: {
+    width: '80%',
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 5,
   },
   header: {
     flexDirection: 'row',
@@ -174,14 +243,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
     width: '100%',
-    backgroundColor: '#141414', // Slightly lighter for contrast+
-    paddingTop: 40,
-    paddingBottom:40, 
+    backgroundColor: '#141414',
+    paddingBottom: 40,
   },
   headerText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF', // White for contrast
+    color: '#FFFFFF',
     marginLeft: 12,
   },
   summaryContainer: {
@@ -190,7 +258,7 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 16,
-    color: '#FFFFFF', // White for better readability
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   botInfoContainer: {
@@ -198,12 +266,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     alignItems: 'center',
   },
-  botIcon: {
-    marginBottom: 10,
-  },
   botInfoText: {
     fontSize: 16,
-    color: '#FFFFFF', // White for better readability
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   transactionInfoContainer: {
@@ -211,12 +276,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     alignItems: 'center',
   },
-  transactionIcon: {
-    marginBottom: 10,
-  },
   transactionInfoText: {
     fontSize: 16,
-    color: '#FFFFFF', // White for better readability
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   settingsInfoContainer: {
@@ -224,12 +286,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     alignItems: 'center',
   },
-  settingsIcon: {
-    marginBottom: 10,
-  },
   settingsInfoText: {
     fontSize: 16,
-    color: '#FFFFFF', // White for better readability
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   textContainer: {
@@ -240,6 +299,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFFFFF', // White for contrast
+    color: '#FFFFFF',
   },
 });
