@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import * as SQLite from 'expo-sqlite';
 
 export default function HomeScreen() {
   const [isFormFilled, setIsFormFilled] = useState(false); // Track if form is filled
