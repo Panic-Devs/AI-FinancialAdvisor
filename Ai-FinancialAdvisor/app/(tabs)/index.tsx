@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import SQLite from 'react-native-sqlite-storage';
 
 export default function HomeScreen() {
   const [isFormFilled, setIsFormFilled] = useState(false); // Track if form is filled
@@ -9,7 +8,6 @@ export default function HomeScreen() {
   const [email, setEmail] = useState('');
   const [payRange, setPayRange] = useState('');
   const [showFormModal, setShowFormModal] = useState(false); // Initially hide the form modal
-  const [db, setDb] = useState(null); // Track database connection
 
   const opacityWelcome = useRef(new Animated.Value(0)).current;
   const opacityContent = useRef(new Animated.Value(0)).current;
@@ -23,63 +21,6 @@ export default function HomeScreen() {
   const chatScale = useRef(new Animated.Value(1)).current;
   const walletScale = useRef(new Animated.Value(1)).current;
   const settingsScale = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    // Initialize SQLite database
-    const initDb = async () => {
-      try {
-        const dbInstance = await SQLite.openDatabase(
-          {
-            name: 'UserDatabase.db',
-            location: 'default',
-          },
-          () => console.log('Database opened successfully'),
-          (error) => console.log('Error opening database: ', error)
-        );
-        setDb(dbInstance);
-      } catch (error) {
-        console.log('Error initializing database: ', error);
-      }
-    };
-    initDb();
-  }, []);
-
-  useEffect(() => {
-    if (db) {
-      createTable();
-    }
-  }, [db]);
-
-  const createTable = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS UserDetails (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, payRange TEXT);',
-        [],
-        () => console.log('Table created successfully'),
-        (error) => console.log('Error creating table: ', error)
-      );
-    });
-  };
-
-  const saveUserDetails = () => {
-    if (!db) {
-      console.log('Database not initialized');
-      return;
-    }
-    
-    db.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO UserDetails (name, email, payRange) VALUES (?, ?, ?);',
-        [name, email, payRange],
-        () => {
-          console.log('User details saved successfully');
-          setIsFormFilled(true);
-          setShowFormModal(false);
-        },
-        (error) => console.log('Error saving user details: ', error)
-      );
-    });
-  };
 
   useEffect(() => {
     Animated.sequence([
@@ -159,7 +100,8 @@ export default function HomeScreen() {
     } else if (!emailRegex.test(email)) {
       alert('Please enter a valid email address');
     } else {
-      saveUserDetails(); // Save user details to SQLite database
+      setIsFormFilled(true); // Mark form as filled
+      setShowFormModal(false); // Hide the form modal
     }
   };
 
@@ -297,14 +239,14 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // Center vertically to occupy full screen
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000000',
     paddingTop: 40,
   },
   mainContent: {
     flex: 1,
-    justifyContent: 'space-evenly', // Space out elements evenly
+    justifyContent: 'space-evenly',
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 20,
