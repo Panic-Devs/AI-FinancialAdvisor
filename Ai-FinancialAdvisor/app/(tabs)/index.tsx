@@ -1,13 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
+import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import * as SQLite from 'expo-sqlite';
+
+// Open the database
+const db = SQLite.openDatabase('transactions.db');
+
+// Initialize the database and create the users table if it doesn't exist
+const setupDatabase = () => {
+  db.transaction(tx => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT,
+        pay_range TEXT
+      );`,
+      [],
+      () => {
+        console.log("Users table created successfully");
+      },
+      (_, error) => {
+        console.error("Error creating users table:", error);
+      }
+    );
+  });
+};
 
 export default function HomeScreen() {
-  const [isFormFilled, setIsFormFilled] = useState(false); // Track if form is filled
+  const [isFormFilled, setIsFormFilled] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [payRange, setPayRange] = useState('');
-  const [showFormModal, setShowFormModal] = useState(false); // Initially hide the form modal
+  const [showFormModal, setShowFormModal] = useState(false);
 
   const opacityWelcome = useRef(new Animated.Value(0)).current;
   const opacityContent = useRef(new Animated.Value(0)).current;
@@ -21,6 +46,25 @@ export default function HomeScreen() {
   const chatScale = useRef(new Animated.Value(1)).current;
   const walletScale = useRef(new Animated.Value(1)).current;
   const settingsScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    setupDatabase(); // Set up the database when component mounts
+  }, []);
+
+  const saveUserDetails = (name, email, payRange) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'INSERT INTO users (name, email, pay_range) VALUES (?, ?, ?);',
+        [name, email, payRange],
+        (_, result) => {
+          console.log('User details saved successfully!', result);
+        },
+        (_, error) => {
+          console.log('Error saving user details', error);
+        }
+      );
+    });
+  };
 
   useEffect(() => {
     Animated.sequence([
@@ -51,7 +95,7 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      setShowFormModal(true); // Show the form modal after the first two animations
+      setShowFormModal(true);
     });
   }, []);
 
@@ -100,6 +144,7 @@ export default function HomeScreen() {
     } else if (!emailRegex.test(email)) {
       alert('Please enter a valid email address');
     } else {
+      saveUserDetails(name, email, payRange); // Save to database
       setIsFormFilled(true); // Mark form as filled
       setShowFormModal(false); // Hide the form modal
     }
@@ -122,15 +167,13 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Form Modal */}
       <Modal visible={showFormModal} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Enter Your Details</Text>
           <Text style={styles.additionalText}>
             Please provide your name, email, and pay range to get started with the app. This information helps us personalize your experience.
           </Text>
-          
-          {/* Name Input */}
+
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Name:</Text>
             <TextInput
@@ -140,8 +183,7 @@ export default function HomeScreen() {
               onChangeText={setName}
             />
           </View>
-          
-          {/* Email Input */}
+
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email:</Text>
             <TextInput
@@ -152,8 +194,7 @@ export default function HomeScreen() {
               keyboardType="email-address"
             />
           </View>
-          
-          {/* Pay Range Input with Dollar Sign */}
+
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Pay Range:</Text>
             <View style={styles.payRangeContainer}>
@@ -162,7 +203,7 @@ export default function HomeScreen() {
                 style={styles.payInput}
                 placeholder="0"
                 value={payRange}
-                onChangeText={(text) => setPayRange(text.replace(/[^0-9]/g, ''))} // Restrict to numbers only
+                onChangeText={(text) => setPayRange(text.replace(/[^0-9]/g, ''))}
                 keyboardType="numeric"
               />
             </View>
@@ -172,7 +213,6 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* Main Content */}
       {isFormFilled && (
         <View style={styles.mainContent}>
           <Animated.View style={[styles.header, { opacity: opacityHeader }]}>
@@ -186,7 +226,7 @@ export default function HomeScreen() {
 
           <Animated.View style={[styles.summaryContainer, { opacity: opacitySummary }]}>
             <Text style={styles.summaryText}>
-              I’m an AI-powered finance app designed to simplify your financial management. With this app, you can easily track your income and expenses, set financial goals, and get tailored advice. Start making informed financial decisions effortlessly with a tool that's both smart and user-friendly.
+              I’m an AI-powered finance app designed to simplify your financial management.
             </Text>
           </Animated.View>
 
@@ -197,7 +237,7 @@ export default function HomeScreen() {
               </Animated.View>
             </TouchableWithoutFeedback>
             <Text style={styles.botInfoText}>
-              My AI bot is your personal financial assistant, here to provide real-time insights and answer any questions. Whether you need budgeting tips, spending analysis, or general financial advice, just ask, and I’ll respond with personalized recommendations to help you meet your goals.
+              My AI bot is your personal financial assistant, here to provide real-time insights and answer any questions.
             </Text>
           </Animated.View>
 
@@ -208,7 +248,7 @@ export default function HomeScreen() {
               </Animated.View>
             </TouchableWithoutFeedback>
             <Text style={styles.transactionInfoText}>
-              The Transaction section lets you manage all your financial transactions with ease. You can log your income, expenses, and categorize them for better clarity. Use this section to track your financial activity over time, ensuring you stay on top of your budget and meet your financial targets.
+              The Transaction section lets you manage all your financial transactions with ease.
             </Text>
           </Animated.View>
 
