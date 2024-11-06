@@ -1,30 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback, Platform } from 'react-native';
+import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as SQLite from 'expo-sqlite';
 
-// Open the database
-const db = SQLite.openDatabase('transactions.db');
+let db;
 
-// Initialize the database and create the users table if it doesn't exist
-const setupDatabase = () => {
-  db.transaction(tx => {
-    tx.executeSql(
-      `CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT,
-        pay_range TEXT
-      );`,
-      [],
-      () => {
-        console.log("Users table created successfully");
-      },
-      (_, error) => {
-        console.error("Error creating users table:", error);
-      }
+const setupDatabaseAsync = async () => {
+  db = await SQLite.openDatabaseAsync('transactions.db');
+  
+  // Create users table if it doesn't exist
+  await db.execAsync(`
+    PRAGMA journal_mode = WAL;
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      pay_range TEXT NOT NULL
     );
-  });
+  `);
+  console.log("Database and users table initialized");
+};
+
+// Function to save user details to the database using `runAsync`
+const saveUserDetailsAsync = async (name, email, payRange) => {
+  try {
+    const result = await db.runAsync(
+      'INSERT INTO users (name, email, pay_range) VALUES (?, ?, ?)',
+      [name, email, payRange]
+    );
+    console.log('User details saved successfully!', result);
+    return result.lastInsertRowId; // Return the ID of the inserted row
+  } catch (error) {
+    console.error('Error saving user details:', error);
+  }
 };
 
 export default function HomeScreen() {
@@ -48,23 +56,9 @@ export default function HomeScreen() {
   const settingsScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    setupDatabase(); // Set up the database when component mounts
+    // Set up the database when component mounts
+    setupDatabaseAsync();
   }, []);
-
-  const saveUserDetails = (name, email, payRange) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'INSERT INTO users (name, email, pay_range) VALUES (?, ?, ?);',
-        [name, email, payRange],
-        (_, result) => {
-          console.log('User details saved successfully!', result);
-        },
-        (_, error) => {
-          console.log('Error saving user details', error);
-        }
-      );
-    });
-  };
 
   useEffect(() => {
     Animated.sequence([
@@ -136,7 +130,7 @@ export default function HomeScreen() {
     }
   }, [isFormFilled]);
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!name || !email || !payRange) {
@@ -144,7 +138,7 @@ export default function HomeScreen() {
     } else if (!emailRegex.test(email)) {
       alert('Please enter a valid email address');
     } else {
-      saveUserDetails(name, email, payRange); // Save to database
+      await saveUserDetailsAsync(name, email, payRange); // Save to database
       setIsFormFilled(true); // Mark form as filled
       setShowFormModal(false); // Hide the form modal
     }
@@ -173,7 +167,7 @@ export default function HomeScreen() {
           <Text style={styles.additionalText}>
             Please provide your name, email, and pay range to get started with the app. This information helps us personalize your experience.
           </Text>
-
+          
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Name:</Text>
             <TextInput
