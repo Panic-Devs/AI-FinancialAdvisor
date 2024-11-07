@@ -17,9 +17,11 @@ export default function TabThreeScreen() {
 
   useEffect(() => {
     const setupDatabase = async () => {
+      // Open the database asynchronously
       const database = await SQLite.openDatabaseAsync('transactions.db');
       setDb(database);
 
+      // Create the table if it doesn't exist
       await database.execAsync(`
         CREATE TABLE IF NOT EXISTS transactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,19 +31,23 @@ export default function TabThreeScreen() {
         );
       `);
 
-      fetchTransactions();
+      // Fetch any existing transactions from the database
+      fetchTransactions(database);
     };
 
     setupDatabase();
   }, []);
 
-  const fetchTransactions = async () => {
-    if (!db) return;
+  // Function to fetch transactions from the database
+  const fetchTransactions = async (database) => {
+    const dbInstance = database || db;
+    if (!dbInstance) return;
 
-    const allRows = await db.getAllAsync('SELECT * FROM transactions');
+    const allRows = await dbInstance.getAllAsync('SELECT * FROM transactions');
     setTransactions(allRows);
   };
 
+  // Function to add a new transaction
   const addTransaction = async () => {
     if (!date || !amount || !status) {
       Alert.alert('Error', 'Please fill all fields');
@@ -55,10 +61,17 @@ export default function TabThreeScreen() {
       status
     );
 
+    // Refresh the transaction list
     fetchTransactions();
     setDate(new Date());
     setAmount('');
     setStatus('Not Processed');
+  };
+
+  // Function to delete a transaction
+  const deleteTransaction = async (id) => {
+    await db.runAsync('DELETE FROM transactions WHERE id = ?', id);
+    fetchTransactions(); // Refresh the transaction list
   };
 
   const onDateChange = (event, selectedDate) => {
@@ -71,6 +84,9 @@ export default function TabThreeScreen() {
       <Text style={styles.cell}>{item.date}</Text>
       <Text style={styles.cell}>{item.amount}</Text>
       <Text style={styles.cell}>{item.status}</Text>
+      <TouchableOpacity onPress={() => deleteTransaction(item.id)} style={styles.deleteButton}>
+        <Ionicons name="trash-outline" size={20} color="red" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -124,6 +140,7 @@ export default function TabThreeScreen() {
         <Text style={styles.headerCell}>Date</Text>
         <Text style={styles.headerCell}>Amount</Text>
         <Text style={styles.headerCell}>Status</Text>
+        <Text style={styles.headerCell}>Delete</Text>
       </View>
 
       {/* Table Rows */}
@@ -201,6 +218,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    alignItems: 'center',
   },
   headerCell: {
     flex: 1,
@@ -210,5 +228,8 @@ const styles = StyleSheet.create({
   cell: {
     flex: 1,
     textAlign: 'center',
+  },
+  deleteButton: {
+    padding: 10,
   },
 });

@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, View, Switch, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Switch, Text, TextInput, Slider } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-export default function TabThreeScreen() {
-  // State for toggles
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
+export default function SettingsScreen() {
+  // State variables
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [salaryRange, setSalaryRange] = useState('');
   const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(false);
+  const [fontSize, setFontSize] = useState(16);
 
   return (
     <ThemedView style={styles.container}>
@@ -17,17 +21,55 @@ export default function TabThreeScreen() {
         <ThemedText type="title">Settings</ThemedText>
       </View>
 
-      {/* General Settings Section */}
+      {/* Account Settings Section */}
       <View style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>General</ThemedText>
-        {/* Notifications Toggle */}
+        <ThemedText style={styles.sectionTitle}>Account</ThemedText>
+
+        {/* Name Input */}
         <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Enable Notifications</Text>
-          <Switch
-            value={isNotificationsEnabled}
-            onValueChange={setIsNotificationsEnabled}
+          <Text style={styles.settingLabel}>Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your name"
+            value={name}
+            onChangeText={setName}
           />
         </View>
+
+        {/* Email Input */}
+        <View style={styles.settingItem}>
+          <Text style={styles.settingLabel}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+        </View>
+
+        {/* Salary Range Picker */}
+        <View style={styles.settingItem}>
+          <Text style={styles.settingLabel}>Salary Range</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={salaryRange}
+              onValueChange={(itemValue) => setSalaryRange(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Salary Range" value="" />
+              <Picker.Item label="Below $20,000" value="Below $20,000" />
+              <Picker.Item label="$20,000 - $50,000" value="$20,000 - $50,000" />
+              <Picker.Item label="$50,000 - $100,000" value="$50,000 - $100,000" />
+              <Picker.Item label="Above $100,000" value="Above $100,000" />
+            </Picker>
+          </View>
+        </View>
+      </View>
+
+      {/* Display Settings Section */}
+      <View style={styles.section}>
+        <ThemedText style={styles.sectionTitle}>Display</ThemedText>
 
         {/* Dark Mode Toggle */}
         <View style={styles.settingItem}>
@@ -37,22 +79,20 @@ export default function TabThreeScreen() {
             onValueChange={setIsDarkModeEnabled}
           />
         </View>
-      </View>
 
-      {/* Account Settings Section */}
-      <View style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>Account</ThemedText>
-        {/* Change Password Button */}
-        <TouchableOpacity style={styles.settingItem} onPress={() => alert('Change Password')}>
-          <Text style={styles.settingLabel}>Change Password</Text>
-          <Ionicons name="chevron-forward" size={20} color="#808080" />
-        </TouchableOpacity>
-
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.settingItem} onPress={() => alert('Logged out')}>
-          <Text style={styles.settingLabel}>Log Out</Text>
-          <Ionicons name="chevron-forward" size={20} color="#808080" />
-        </TouchableOpacity>
+        {/* Font Size Slider */}
+        <View style={styles.settingItem}>
+          <Text style={styles.settingLabel}>Font Size</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={12}
+            maximumValue={24}
+            step={1}
+            value={fontSize}
+            onValueChange={setFontSize}
+          />
+          <Text style={styles.fontSizeLabel}>{fontSize}</Text>
+        </View>
       </View>
     </ThemedView>
   );
@@ -84,13 +124,39 @@ const styles = StyleSheet.create({
   },
   settingItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
   settingLabel: {
+    fontSize: 16,
+    flex: 1,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 8,
+    borderRadius: 5,
+    width: '60%',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    width: '60%',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 40,
+    width: '100%',
+  },
+  slider: {
+    width: '50%',
+  },
+  fontSizeLabel: {
+    marginLeft: 8,
     fontSize: 16,
   },
 });
