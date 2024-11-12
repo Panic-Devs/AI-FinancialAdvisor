@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, View, Switch, Text, TextInput, Slider } from 'react-native';
+import { StyleSheet, View, Switch, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function SettingsScreen() {
   // State variables
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [salaryRange, setSalaryRange] = useState('');
+  const [name, setName] = useState('John Doe');  // Placeholder for fetched data
+  const [email, setEmail] = useState('johndoe@example.com');  // Placeholder for fetched data
+  const [salaryRange, setSalaryRange] = useState('$20,000 - $50,000');  // Placeholder for fetched data
   const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(false);
   const [fontSize, setFontSize] = useState(16);
+
+  // Toggle edit mode
+  const [isEditing, setIsEditing] = useState(false);
 
   return (
     <ThemedView style={styles.container}>
@@ -25,46 +28,65 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <ThemedText style={styles.sectionTitle}>Account</ThemedText>
 
-        {/* Name Input */}
+        {/* Name Field */}
         <View style={styles.settingItem}>
           <Text style={styles.settingLabel}>Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your name"
-            value={name}
-            onChangeText={setName}
-          />
+          {isEditing ? (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your name"
+              value={name}
+              onChangeText={setName}
+            />
+          ) : (
+            <Text style={styles.valueText}>{name}</Text>
+          )}
         </View>
 
-        {/* Email Input */}
+        {/* Email Field */}
         <View style={styles.settingItem}>
           <Text style={styles.settingLabel}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
+          {isEditing ? (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+          ) : (
+            <Text style={styles.valueText}>{email}</Text>
+          )}
         </View>
 
-        {/* Salary Range Picker */}
+        {/* Salary Range Field */}
         <View style={styles.settingItem}>
           <Text style={styles.settingLabel}>Salary Range</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={salaryRange}
-              onValueChange={(itemValue) => setSalaryRange(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select Salary Range" value="" />
-              <Picker.Item label="Below $20,000" value="Below $20,000" />
-              <Picker.Item label="$20,000 - $50,000" value="$20,000 - $50,000" />
-              <Picker.Item label="$50,000 - $100,000" value="$50,000 - $100,000" />
-              <Picker.Item label="Above $100,000" value="Above $100,000" />
-            </Picker>
-          </View>
+          {isEditing ? (
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={salaryRange}
+                onValueChange={(itemValue) => setSalaryRange(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Below $20,000" value="Below $20,000" />
+                <Picker.Item label="$20,000 - $50,000" value="$20,000 - $50,000" />
+                <Picker.Item label="$50,000 - $100,000" value="$50,000 - $100,000" />
+                <Picker.Item label="Above $100,000" value="Above $100,000" />
+              </Picker>
+            </View>
+          ) : (
+            <Text style={styles.valueText}>{salaryRange}</Text>
+          )}
         </View>
+
+        {/* Edit Button */}
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => setIsEditing(!isEditing)}
+        >
+          <Text style={styles.editButtonText}>{isEditing ? "Save" : "Edit"}</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Display Settings Section */}
@@ -80,18 +102,21 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* Font Size Slider */}
+        {/* Font Size Picker */}
         <View style={styles.settingItem}>
           <Text style={styles.settingLabel}>Font Size</Text>
-          <Slider
-            style={styles.slider}
-            minimumValue={12}
-            maximumValue={24}
-            step={1}
-            value={fontSize}
-            onValueChange={setFontSize}
-          />
-          <Text style={styles.fontSizeLabel}>{fontSize}</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={fontSize}
+              onValueChange={setFontSize}
+              style={styles.picker}
+            >
+              <Picker.Item label="Small (12)" value={12} />
+              <Picker.Item label="Medium (16)" value={16} />
+              <Picker.Item label="Large (20)" value={20} />
+              <Picker.Item label="Extra Large (24)" value={24} />
+            </Picker>
+          </View>
         </View>
       </View>
     </ThemedView>
@@ -141,6 +166,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '60%',
   },
+  valueText: {
+    fontSize: 16,
+    color: '#555',
+  },
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -152,11 +181,16 @@ const styles = StyleSheet.create({
     height: 40,
     width: '100%',
   },
-  slider: {
-    width: '50%',
+  editButton: {
+    marginTop: 16,
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
   },
-  fontSizeLabel: {
-    marginLeft: 8,
+  editButtonText: {
+    color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
   },
 });
