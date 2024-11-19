@@ -1,50 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Easing, View, Text, TextInput, Button, Modal, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import * as SQLite from 'expo-sqlite';
-
-let db;
-
-const setupDatabaseAsync = async () => {
-  db = await SQLite.openDatabaseAsync('transactions.db');
-  
-  // Create users table if it doesn't exist
-  await db.execAsync(`
-    PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY NOT NULL,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      pay_range TEXT NOT NULL
-    );
-  `);
-  console.log("Database and users table initialized");
-};
-// Function to fetch user details from the database
-const fetchUserDetailsAsync = async () => {
-  try {
-    const result = await db.getFirstAsync('SELECT * FROM users ORDER BY id DESC LIMIT 1'); // Fetch the latest user
-    console.log('Fetched user details:', result);
-    return result;
-  } catch (error) {
-    console.error('Error fetching user details:', error);
-  }
-};
-
-
-// Function to save user details to the database using `runAsync`
-const saveUserDetailsAsync = async (name, email, payRange) => {
-  try {
-    const result = await db.runAsync(
-      'INSERT INTO users (name, email, pay_range) VALUES (?, ?, ?)',
-      [name, email, payRange]
-    );
-    console.log('User details saved successfully!', result);
-    return result.lastInsertRowId; // Return the ID of the inserted row
-  } catch (error) {
-    console.error('Error saving user details:', error);
-  }
-};
 
 export default function HomeScreen() {
   const [isFormFilled, setIsFormFilled] = useState(false);
@@ -407,3 +363,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
+
